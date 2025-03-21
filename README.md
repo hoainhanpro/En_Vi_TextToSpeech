@@ -124,26 +124,35 @@ python synthesize.py --restore_step 100000 --mode single --text "Xin chào, tôi
 ## 🔧 Cấu trúc dự án
 
 ```
-FastSpeech2_vi/
-├── config/                 # Cấu hình cho từng ngôn ngữ
+En_Vi_TextToSpeech/
+├── audio/                 # Dữ liệu âm thanh
+├── backup/                # Backup các phiên bản
+├── config/                # Cấu hình cho từng ngôn ngữ
 │   ├── LJSpeech/          # Cấu hình cho tiếng Anh
 │   └── infore/            # Cấu hình cho tiếng Việt
-├── dataset/               # Xử lý và tải dữ liệu
+├── demo/                  # File demo kết quả
 ├── hifigan/               # Vocoder HiFi-GAN
+├── lexicon/               # Từ điển ngữ âm
+├── mfa/                   # Montreal Forced Aligner
 ├── model/                 # Mô hình FastSpeech2
-│   ├── blocks.py          # Các khối building block
-│   ├── variance_adaptor.py # Bộ điều chỉnh phương sai
-│   └── ...
 ├── output/                # Kết quả và checkpoint
 │   ├── ckpt/              # Checkpoint mô hình
 │   └── result/            # Kết quả synthesis
 ├── preprocessed_data/     # Dữ liệu đã tiền xử lý
+├── preprocessor/          # Scripts tiền xử lý
+├── scripts/               # Scripts hỗ trợ
 ├── text/                  # Xử lý text và phoneme
+├── transformer/           # Mô hình transformer
 ├── utils/                 # Công cụ hỗ trợ
+├── dataset.py             # Xử lý dataset
+├── evaluate.py            # Đánh giá mô hình
+├── fix_align.py           # Sửa lỗi alignment
+├── prepare_align.py       # Chuẩn bị alignment
 ├── preprocess.py          # Script tiền xử lý
-├── train.py               # Script huấn luyện
 ├── synthesize.py          # Tạo giọng nói từ mô hình
-└── tts_dual_mode.py       # Ứng dụng GUI đa ngôn ngữ
+├── train.py               # Script huấn luyện
+├── tts_dual_mode.py       # Ứng dụng GUI đa ngôn ngữ
+└── vn-text-to-speech.ipynb # Notebook hướng dẫn
 ```
 
 ## 🚀 Ưu điểm của FastSpeech2
