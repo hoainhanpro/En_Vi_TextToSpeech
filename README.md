@@ -8,8 +8,8 @@ FastSpeech2 là mô hình text-to-speech (TTS) tiên tiến, được phát tri�
 
 ### 1️⃣ Thu thập dữ liệu
 
-- **Tiếng Việt**: Sử dụng bộ dữ liệu [InfoRe] (https://huggingface.co/datasets/ntt123/infore/resolve/main/infore_16k_denoised.zip) (hoặc tương tự)
-- **Tiếng Anh**: Sử dụng bộ dữ liệu [LJSpeech] (https://keithito.com/LJ-Speech-Dataset/)
+- **Tiếng Việt**: Sử dụng bộ dữ liệu [InfoRe](https://huggingface.co/datasets/ntt123/infore/resolve/main/infore_16k_denoised.zip) (hoặc tương tự)
+- **Tiếng Anh**: Sử dụng bộ dữ liệu [LJSpeech](https://keithito.com/LJ-Speech-Dataset/)
 
 Mỗi bộ dữ liệu cần có:
 - File âm thanh `.wav` (tốt nhất là 22.05kHz, 16-bit)
@@ -175,8 +175,15 @@ Dự án này cung cấp khả năng xử lý đa ngôn ngữ trong cùng một 
 3. [HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis](https://arxiv.org/abs/2010.05646)
 4. [Text-to-Speech for Low-resource Languages: A Survey](https://arxiv.org/abs/2110.04040)
 
+## 🎯 Hướng dẫn chi tiết train mô hình FastSpeech2
+
+Để tham khảo cách train mô hình FastSpeech2 đầy đủ hơn, bạn có thể tham khảo repo của tác giả:
+
+🔗 [FastSpeech2](https://github.com/ming024/FastSpeech2)
+
+
 ---
 
 📱 **Tác giả**: Hoài Nhân  
-🌐 **Liên hệ**: hoainhan@example.com  
-📅 **Cập nhật**: Tháng 7, 2023
+🌐 **Liên hệ**: hoainhannro@gmail.com  
+📅 **Cập nhật**: Tháng 3, 2025
