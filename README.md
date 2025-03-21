@@ -156,18 +156,6 @@ FastSpeech2_vi/
 
 4. **Đa ngôn ngữ**: Dễ dàng mở rộng cho nhiều ngôn ngữ khác nhau, bao gồm cả tiếng Việt với hệ thống dấu thanh phức tạp.
 
-## 🌟 Tính năng đặc biệt: Chế độ đa ngôn ngữ
-
-Dự án này cung cấp khả năng xử lý đa ngôn ngữ trong cùng một văn bản, cho phép:
-
-1. **Tự động nhận dạng ngôn ngữ**: Sử dụng `langdetect` để xác định ngôn ngữ của từng đoạn văn bản.
-
-2. **Phân đoạn văn bản**: Tự động chia nhỏ văn bản thành các đoạn theo ngôn ngữ phát hiện được.
-
-3. **Xử lý đa ngôn ngữ**: Mỗi đoạn được xử lý bởi mô hình TTS tương ứng với ngôn ngữ của nó.
-
-4. **Ghép nối âm thanh**: Tự động ghép các file âm thanh thành một kết quả hoàn chỉnh.
-
 ## 📝 Tài liệu tham khảo
 
 1. [FastSpeech 2: Fast and High-Quality End-to-End Text to Speech](https://arxiv.org/abs/2006.04558)
