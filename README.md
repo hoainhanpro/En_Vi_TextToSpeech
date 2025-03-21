@@ -1,203 +1,182 @@
-# Apply FastSpeech 2 model to Vietnamese TTS
+# 📚 Hướng Dẫn Huấn Luyện Mô Hình FastSpeech2 Đa Ngôn Ngữ 🇻🇳 🇬🇧
 
-## Dataset
-- [Infore](https://huggingface.co/datasets/ntt123/infore/resolve/main/infore_16k_denoised.zip): a single speaker Vietnamese dataset with 14935 short audio clips of a female speaker
-- Download and extract files into ``./raw_data/infore/``
+## 📋 Giới Thiệu
 
-## Montreal Forced Aligner
-- Recommended version: 2.0.6
+FastSpeech2 là mô hình text-to-speech (TTS) tiên tiến, được phát triển bởi Microsoft, giải quyết nhiều vấn đề của các mô hình TTS truyền thống như chậm trong quá trình inference và thiếu khả năng kiểm soát giọng nói (như tốc độ, cao độ, năng lượng). Dự án này triển khai FastSpeech2 cho tiếng Việt và tiếng Anh, cho phép tạo giọng nói tự nhiên với khả năng kiểm soát các thuộc tính giọng nói.
 
-## Preprocess data and train model 
-- Do step by step according to scripts included in ``./scripts/infore/``
-- Alignment of the dataset Infore at here [Infore's alignment](https://drive.google.com/file/d/1pDlwYDn2xW2_nnW5dzyVecmb_xbMsaQx/view?usp=sharing) : download and extract into ``./proprocessed_data/infore/``
+## 🔄 Quy Trình Huấn Luyện
 
-## Pretrained model
-- Download and extract [pretrained model](https://drive.google.com/file/d/1R0RuE75JlPR2_ApsTrk6z4rPhgLKvK-B/view?usp=sharing) into ``./output/ckpt/infore/``
+### 1️⃣ Thu thập dữ liệu
 
-## Inferrence
-```
-python3 synthesize.py --text "YOUR_DESIRED_TEXT" --restore_step 100000 --mode single -p config/infore/preprocess.yaml -m config/infore/model.yaml -t config/infore/train.yaml
-```
+- **Tiếng Việt**: Sử dụng bộ dữ liệu [InfoRe] (https://huggingface.co/datasets/ntt123/infore/resolve/main/infore_16k_denoised.zip) (hoặc tương tự)
+- **Tiếng Anh**: Sử dụng bộ dữ liệu [LJSpeech] (https://keithito.com/LJ-Speech-Dataset/)
 
-## Output samples
+Mỗi bộ dữ liệu cần có:
+- File âm thanh `.wav` (tốt nhất là 22.05kHz, 16-bit)
+- File văn bản tương ứng (transcripts)
 
-https://user-images.githubusercontent.com/19236957/231334534-945ce599-6754-4f75-983a-ea4ac0fea5ad.mov
-- ```Ánh nắng cuối cùng luyến tiếc rời bỏ ngàn lá xanh bên kia bờ, vạn vật trở nên buồn buồn trong bóng hoàng hôn.```
+### 2️⃣ Căn chỉnh dữ liệu với Montreal Forced Aligner (MFA) 🔍
 
-https://user-images.githubusercontent.com/19236957/231334930-7237c25c-d311-442d-aa74-53490c766266.mov
-- ```Trên không, vài con cò về tổ trễ đập nhanh đôi cánh trắng phau rồi khuất trong lùm cây rậm lá. Những đám mây trắng đá ngả màu ngà, bầu trời xanh cũng đã ngả sang màu sậm đưa đến màu đen. Đâu đó có tiếng chim lẻ bạn, tiếng dơi muỗi lào xào lẫn trong tiếng gió nhẹ lay cành. Dưới bến sông, con nước ròng lên đầy mé đã đứng lại không lùa được những đợt lục bình lờ lững giữa dòng ra sông cái. Dòng nước xanh chìm đi trong màu xám sậm và những bóng cây bên bờ kia ngả xuống dòng càng lúc càng hiện rõ lù lù thành hàng trong bóng nước.```
+MFA được sử dụng để căn chỉnh âm thanh với văn bản ở cấp độ phoneme, tạo ra thông tin thời gian chính xác cho mỗi phoneme.
 
-https://user-images.githubusercontent.com/19236957/231334990-4e3de0c7-7152-4708-99a3-706db88451b8.mov
-- ```Mặt trăng tròn vành vạnh từ từ nhô lên sau luỹ tre. Trăng đêm nay sáng quá! Bầu trời điểm xuyết một vài ngôi sao lấp lánh như những con đom đóm nhỏ. Ánh trăng tàng dịu mát tỏa xuống, chảy loang lổ trên mặt đất, trên các cành cây ngọn cỏ. Không gian mới yên tĩnh làm sao! Chỉ còn tiếng sương đêm rơi lốp bốp trên lá cây và tiếng côn trùng ra rả trong đất ẩm . Chị gió chuyên cần nhẹ nhàng bay làm rung mấy ngọn xà cừ ven đường. Thoang thoảng đâu đây mùi hoa thiên lí dịu dàng lan tỏa. Đêm trăng thật đẹp và êm đềm.```
-
-
-## Training loss
-![](./img/infore_loss.png)
-
-# FastSpeech 2 - PyTorch Implementation
-
-This is a PyTorch implementation of Microsoft's text-to-speech system [**FastSpeech 2: Fast and High-Quality End-to-End Text to Speech**](https://arxiv.org/abs/2006.04558v1). 
-This project is based on [xcmyz's implementation](https://github.com/xcmyz/FastSpeech) of FastSpeech. Feel free to use/modify the code.
-
-There are several versions of FastSpeech 2.
-This implementation is more similar to [version 1](https://arxiv.org/abs/2006.04558v1), which uses F0 values as the pitch features.
-On the other hand, pitch spectrograms extracted by continuous wavelet transform are used as the pitch features in the [later versions](https://arxiv.org/abs/2006.04558).
-
-![](./img/model.png)
-
-# Updates
-- 2021/7/8: Release the checkpoint and audio samples of a multi-speaker English TTS model trained on LibriTTS
-- 2021/2/26: Support English and Mandarin TTS
-- 2021/2/26: Support multi-speaker TTS (AISHELL-3 and LibriTTS)
-- 2021/2/26: Support MelGAN and HiFi-GAN vocoder
-
-# Audio Samples
-Audio samples generated by this implementation can be found [here](https://ming024.github.io/FastSpeech2/). 
-
-# Quickstart
-
-## Dependencies
-You can install the Python dependencies with
-```
-pip3 install -r requirements.txt
+1. **Cài đặt MFA**:
+```bash
+pip install montreal-forced-aligner
 ```
 
-## Inference
+2. **Chuẩn bị dữ liệu cho MFA**:
+   - Tạo thư mục chứa các file âm thanh `.wav`
+   - Tạo file `.lab` hoặc `.TextGrid` chứa nội dung văn bản tương ứng
 
-You have to download the [pretrained models](https://drive.google.com/drive/folders/1DOhZGlTLMbbAAFZmZGDdc77kz1PloS7F?usp=sharing) and put them in ``output/ckpt/LJSpeech/``,  ``output/ckpt/AISHELL3``, or ``output/ckpt/LibriTTS/``.
-
-For English single-speaker TTS, run
-```
-python3 synthesize.py --text "YOUR_DESIRED_TEXT" --restore_step 900000 --mode single -p config/LJSpeech/preprocess.yaml -m config/LJSpeech/model.yaml -t config/LJSpeech/train.yaml
-```
-
-For Mandarin multi-speaker TTS, try
-```
-python3 synthesize.py --text "大家好" --speaker_id SPEAKER_ID --restore_step 600000 --mode single -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml
+3. **Thực hiện alignment**:
+```bash
+mfa align /đường_dẫn/đến/dữ_liệu /đường_dẫn/đến/từ_điển /đường_dẫn/đến/mô_hình_âm_vị tiếng_việt
 ```
 
-For English multi-speaker TTS, run
-```
-python3 synthesize.py --text "YOUR_DESIRED_TEXT"  --speaker_id SPEAKER_ID --restore_step 800000 --mode single -p config/LibriTTS/preprocess.yaml -m config/LibriTTS/model.yaml -t config/LibriTTS/train.yaml
-```
+4. **Kết quả alignment**:
+   - File `.TextGrid` chứa thông tin thời gian cho từng phoneme
+   - Dữ liệu này sẽ được sử dụng để huấn luyện mô hình duration predictor
 
-For Vietnamese single-speaker TTS, run
-```
-python3 synthesize.py --text "YOUR_DESIRED_TEXT" --restore_step 100000 --mode single -p config/infore/preprocess.yaml -m config/infore/model.yaml -t config/infore/train.yaml
-```
+### 3️⃣ Tiền xử lý và chuẩn hóa dữ liệu 🧹
 
-The generated utterances will be put in ``output/result/``.
-
-Here is an example of synthesized mel-spectrogram of the sentence "Printing, in the only sense with which we are at present concerned, differs from most if not from all the arts and crafts represented in the Exhibition", with the English single-speaker TTS model.  
-![](./img/synthesized_melspectrogram.png)
-
-## Batch Inference
-Batch inference is also supported, try
-
-```
-python3 synthesize.py --source preprocessed_data/LJSpeech/val.txt --restore_step 900000 --mode batch -p config/LJSpeech/preprocess.yaml -m config/LJSpeech/model.yaml -t config/LJSpeech/train.yaml
-```
-to synthesize all utterances in ``preprocessed_data/LJSpeech/val.txt``
-
-## Controllability
-The pitch/volume/speaking rate of the synthesized utterances can be controlled by specifying the desired pitch/energy/duration ratios.
-For example, one can increase the speaking rate by 20 % and decrease the volume by 20 % by
-
-```
-python3 synthesize.py --text "YOUR_DESIRED_TEXT" --restore_step 900000 --mode single -p config/LJSpeech/preprocess.yaml -m config/LJSpeech/model.yaml -t config/LJSpeech/train.yaml --duration_control 0.8 --energy_control 0.8
+```bash
+python preprocess.py --config config/LJSpeech/preprocess.yaml
+python preprocess.py --config config/infore/preprocess.yaml
 ```
 
-# Training
+Quá trình tiền xử lý bao gồm:
 
-## Datasets
+1. **Chuẩn hóa văn bản**:
+   - Tiếng Anh: Chuyển đổi từ văn bản sang phoneme bằng cách sử dụng thư viện `g2p-en`
+   - Tiếng Việt: Sử dụng `text.vietnamese_phonemes` để chuyển đổi thành phoneme tiếng Việt
 
-The supported datasets are
+2. **Trích xuất đặc trưng âm thanh**:
+   - Xử lý tín hiệu âm thanh thành Mel spectrogram
+   - Trích xuất thông tin pitch (F0) sử dụng PyWorld
+   - Trích xuất thông tin energy từ mel spectrogram
 
-- [LJSpeech](https://keithito.com/LJ-Speech-Dataset/): a single-speaker English dataset consists of 13100 short audio clips of a female speaker reading passages from 7 non-fiction books, approximately 24 hours in total.
-- [AISHELL-3](http://www.aishelltech.com/aishell_3): a Mandarin TTS dataset with 218 male and female speakers, roughly 85 hours in total.
-- [LibriTTS](https://research.google/tools/datasets/libri-tts/): a multi-speaker English dataset containing 585 hours of speech by 2456 speakers.
-- [Infore](https://huggingface.co/datasets/ntt123/infore/resolve/main/infore_16k_denoised.zip): a single speaker Vietnamese dataset with 14935 short audio clips of a female speaker
+3. **Chuẩn hóa**:
+   - Chuẩn hóa độ dài dữ liệu
+   - Tính toán thống kê (mean, std) của pitch và energy cho việc chuẩn hóa
+   - Lưu trữ thông tin alignment để tính duration của mỗi phoneme
 
-We take LJSpeech as an example hereafter.
+4. **Lưu trữ dữ liệu tiền xử lý**:
+   - Dữ liệu được lưu trong thư mục `preprocessed_data`
+   - Bao gồm mel spectrograms, thông tin pitch, energy, duration và text sequences
 
-## Preprocessing
- 
-First, run 
-```
-python3 prepare_align.py config/LJSpeech/preprocess.yaml
-```
-for some preparations.
+### 4️⃣ Huấn luyện mô hình 🚀
 
-As described in the paper, [Montreal Forced Aligner](https://montreal-forced-aligner.readthedocs.io/en/latest/) (MFA) is used to obtain the alignments between the utterances and the phoneme sequences.
-Alignments of the supported datasets are provided [here](https://drive.google.com/drive/folders/1DBRkALpPd6FL9gjHMmMEdHODmkgNIIK4?usp=sharing).
-You have to unzip the files in ``preprocessed_data/LJSpeech/TextGrid/``.
-
-After that, run the preprocessing script by
-```
-python3 preprocess.py config/LJSpeech/preprocess.yaml
+```bash
+python train.py --config config/LJSpeech/preprocess.yaml config/LJSpeech/model.yaml config/LJSpeech/train.yaml
+python train.py --config config/infore/preprocess.yaml config/infore/model.yaml config/infore/train.yaml
 ```
 
-Alternately, you can align the corpus by yourself. 
-Download the official MFA package and run
-```
-./montreal-forced-aligner/bin/mfa_align raw_data/LJSpeech/ lexicon/librispeech-lexicon.txt english preprocessed_data/LJSpeech
-```
-or
-```
-./montreal-forced-aligner/bin/mfa_train_and_align raw_data/LJSpeech/ lexicon/librispeech-lexicon.txt preprocessed_data/LJSpeech
-```
+Quá trình huấn luyện:
 
-to align the corpus and then run the preprocessing script.
-```
-python3 preprocess.py config/LJSpeech/preprocess.yaml
-```
+1. **Kiến trúc FastSpeech2**:
+   - **Encoder**: Biến đổi chuỗi phoneme thành biểu diễn hidden
+   - **Variance Adaptor**: Dự đoán và điều chỉnh pitch, energy, duration
+   - **Decoder**: Biến đổi biểu diễn hidden thành mel spectrogram
+   - **Vocoder**: Biến đổi mel spectrogram thành dạng sóng âm thanh (HiFi-GAN)
 
-## Training
+2. **Các giai đoạn huấn luyện**:
+   - Huấn luyện mô hình FastSpeech2 (encoder, variance adaptor, decoder)
+   - Sử dụng vocoder được huấn luyện trước (HiFi-GAN) để chuyển đổi thành audio
 
-Train your model with
-```
-python3 train.py -p config/LJSpeech/preprocess.yaml -m config/LJSpeech/model.yaml -t config/LJSpeech/train.yaml
-```
+3. **Chiến lược huấn luyện**:
+   - Sử dụng Adam optimizer với scheduled learning rate
+   - Huấn luyện với batch size 16-32 (tùy thuộc vào GPU)
+   - Sử dụng gradient clipping để ổn định quá trình huấn luyện
+   - Lưu checkpoint mô hình định kỳ để đánh giá
 
-The model takes less than 10k steps (less than 1 hour on my GTX1080Ti GPU) of training to generate audio samples with acceptable quality, which is much more efficient than the autoregressive models such as Tacotron2.
+4. **Theo dõi quá trình huấn luyện**:
+   - Sử dụng TensorBoard để theo dõi loss, mel spectrograms, và audio samples
+   - Đánh giá mô hình qua các thời điểm checkpoint khác nhau
 
-# TensorBoard
+### 5️⃣ Đánh giá mô hình và tinh chỉnh 📊
 
-Use
-```
-tensorboard --logdir output/log/LJSpeech
+```bash
+python synthesize.py --restore_step 100000 --mode single --text "Xin chào, tôi là trợ lý ảo."
 ```
 
-to serve TensorBoard on your localhost.
-The loss curves, synthesized mel-spectrograms, and audios are shown.
+1. **Đánh giá chất lượng**:
+   - Đánh giá chủ quan bằng cách nghe thử các mẫu âm thanh tạo ra
+   - So sánh với ground truth và các mô hình TTS khác
 
-![](./img/tensorboard_loss.png)
-![](./img/tensorboard_spec.png)
-![](./img/tensorboard_audio.png)
+2. **Tinh chỉnh**:
+   - Điều chỉnh hyperparameters dựa trên kết quả đánh giá
+   - Cân nhắc fine-tuning trên dữ liệu bổ sung nếu cần
 
-# Implementation Issues
+### 6️⃣ Triển khai mô hình 🖥️
 
-- Following [xcmyz's implementation](https://github.com/xcmyz/FastSpeech), I use an additional Tacotron-2-styled Post-Net after the decoder, which is not used in the original FastSpeech 2.
-- Gradient clipping is used in the training.
-- In my experience, using phoneme-level pitch and energy prediction instead of frame-level prediction results in much better prosody, and normalizing the pitch and energy features also helps. Please refer to ``config/README.md`` for more details.
+1. **Chuyển đổi mô hình**:
+   - Sử dụng các checkpoint đã huấn luyện: `900000.pth.tar` cho tiếng Anh, `100000.pth.tar` cho tiếng Việt
+   - Tích hợp với vocoder HiFi-GAN
 
-Please inform me if you find any mistakes in this repo, or any useful tips to train the FastSpeech 2 model.
+2. **Tạo giao diện người dùng**:
+   - Sử dụng PyQt5 để xây dựng giao diện đồ họa `tts_dual_mode.py`
+   - Hỗ trợ đa ngôn ngữ với tính năng tự động phát hiện ngôn ngữ
 
-# References
-- [FastSpeech 2: Fast and High-Quality End-to-End Text to Speech](https://arxiv.org/abs/2006.04558), Y. Ren, *et al*.
-- [xcmyz's FastSpeech implementation](https://github.com/xcmyz/FastSpeech)
-- [TensorSpeech's FastSpeech 2 implementation](https://github.com/TensorSpeech/TensorflowTTS)
-- [rishikksh20's FastSpeech 2 implementation](https://github.com/rishikksh20/FastSpeech2)
+3. **Cài đặt và sử dụng**:
+   - Cài đặt các thư viện cần thiết: `pip install -r requirements.txt`
+   - Chạy ứng dụng: `python tts_dual_mode.py`
 
-# Citation
+## 🔧 Cấu trúc dự án
+
 ```
-@INPROCEEDINGS{chien2021investigating,
-  author={Chien, Chung-Ming and Lin, Jheng-Hao and Huang, Chien-yu and Hsu, Po-chun and Lee, Hung-yi},
-  booktitle={ICASSP 2021 - 2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)}, 
-  title={Investigating on Incorporating Pretrained and Learnable Speaker Representations for Multi-Speaker Multi-Style Text-to-Speech}, 
-  year={2021},
-  volume={},
-  number={},
-  pages={8588-8592},
-  doi={10.1109/ICASSP39728.2021.9413880}}
+FastSpeech2_vi/
+├── config/                 # Cấu hình cho từng ngôn ngữ
+│   ├── LJSpeech/          # Cấu hình cho tiếng Anh
+│   └── infore/            # Cấu hình cho tiếng Việt
+├── dataset/               # Xử lý và tải dữ liệu
+├── hifigan/               # Vocoder HiFi-GAN
+├── model/                 # Mô hình FastSpeech2
+│   ├── blocks.py          # Các khối building block
+│   ├── variance_adaptor.py # Bộ điều chỉnh phương sai
+│   └── ...
+├── output/                # Kết quả và checkpoint
+│   ├── ckpt/              # Checkpoint mô hình
+│   └── result/            # Kết quả synthesis
+├── preprocessed_data/     # Dữ liệu đã tiền xử lý
+├── text/                  # Xử lý text và phoneme
+├── utils/                 # Công cụ hỗ trợ
+├── preprocess.py          # Script tiền xử lý
+├── train.py               # Script huấn luyện
+├── synthesize.py          # Tạo giọng nói từ mô hình
+└── tts_dual_mode.py       # Ứng dụng GUI đa ngôn ngữ
 ```
+
+## 🚀 Ưu điểm của FastSpeech2
+
+1. **Tốc độ inference nhanh**: Kiến trúc non-autoregressive cho phép tạo ra âm thanh nhanh hơn nhiều lần so với các mô hình autoregressive như Tacotron 2.
+
+2. **Kiểm soát linh hoạt**: Cho phép điều chỉnh pitch, energy và duration, tạo ra giọng nói với nhiều cảm xúc và nhấn mạnh khác nhau.
+
+3. **Chất lượng cao**: Khả năng tạo ra giọng nói tự nhiên, rõ ràng với ít lỗi phổ biến của TTS (lặp từ, bỏ sót từ).
+
+4. **Đa ngôn ngữ**: Dễ dàng mở rộng cho nhiều ngôn ngữ khác nhau, bao gồm cả tiếng Việt với hệ thống dấu thanh phức tạp.
+
+## 🌟 Tính năng đặc biệt: Chế độ đa ngôn ngữ
+
+Dự án này cung cấp khả năng xử lý đa ngôn ngữ trong cùng một văn bản, cho phép:
+
+1. **Tự động nhận dạng ngôn ngữ**: Sử dụng `langdetect` để xác định ngôn ngữ của từng đoạn văn bản.
+
+2. **Phân đoạn văn bản**: Tự động chia nhỏ văn bản thành các đoạn theo ngôn ngữ phát hiện được.
+
+3. **Xử lý đa ngôn ngữ**: Mỗi đoạn được xử lý bởi mô hình TTS tương ứng với ngôn ngữ của nó.
+
+4. **Ghép nối âm thanh**: Tự động ghép các file âm thanh thành một kết quả hoàn chỉnh.
+
+## 📝 Tài liệu tham khảo
+
+1. [FastSpeech 2: Fast and High-Quality End-to-End Text to Speech](https://arxiv.org/abs/2006.04558)
+2. [Montreal Forced Aligner](https://montreal-forced-aligner.readthedocs.io/)
+3. [HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis](https://arxiv.org/abs/2010.05646)
+4. [Text-to-Speech for Low-resource Languages: A Survey](https://arxiv.org/abs/2110.04040)
+
+---
+
+📱 **Tác giả**: Hoài Nhân  
+🌐 **Liên hệ**: hoainhan@example.com  
+📅 **Cập nhật**: Tháng 7, 2023
