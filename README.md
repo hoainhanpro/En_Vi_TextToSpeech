@@ -110,7 +110,7 @@ python synthesize.py --restore_step 100000 --mode single --text "Xin chào, tôi
 ### 6️⃣ Triển khai mô hình 🖥️
 
 1. **Chuyển đổi mô hình**:
-   - Sử dụng các checkpoint đã huấn luyện: `900000.pth.tar` cho tiếng Anh, `100000.pth.tar` cho tiếng Việt
+   - Sử dụng các checkpoint đã huấn luyện
    - Tích hợp với vocoder HiFi-GAN
 
 2. **Tạo giao diện người dùng**:
