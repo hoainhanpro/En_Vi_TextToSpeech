@@ -3,6 +3,13 @@ import json
 
 import torch
 import numpy as np
+from numpy.core.multiarray import scalar
+
+# Register numpy scalar as a safe global for PyTorch 2.6+ compatibility
+try:
+    torch.serialization.add_safe_globals([scalar])
+except (AttributeError, ImportError):
+    pass  # For older PyTorch versions that don't have this function
 
 import hifigan
 from model import FastSpeech2, ScheduledOptim
@@ -17,7 +24,8 @@ def get_model(args, configs, device, train=False):
             train_config["path"]["ckpt_path"],
             "{}.pth.tar".format(args.restore_step),
         )
-        ckpt = torch.load(ckpt_path, device)
+        # Explicitly set weights_only=False for PyTorch 2.6+ compatibility
+        ckpt = torch.load(ckpt_path, device, weights_only=False)
         model.load_state_dict(ckpt["model"])
 
     if train:
@@ -60,9 +68,9 @@ def get_vocoder(config, device):
         config = hifigan.AttrDict(config)
         vocoder = hifigan.Generator(config)
         if speaker == "LJSpeech":
-            ckpt = torch.load("hifigan/generator_LJSpeech.pth.tar", device)
+            ckpt = torch.load("hifigan/generator_LJSpeech.pth.tar", device, weights_only=False)
         elif speaker == "universal":
-            ckpt = torch.load("hifigan/generator_universal.pth.tar", device)
+            ckpt = torch.load("hifigan/generator_universal.pth.tar", device, weights_only=False)
         vocoder.load_state_dict(ckpt["generator"])
         vocoder.eval()
         vocoder.remove_weight_norm()

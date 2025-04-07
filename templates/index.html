@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đa Ngôn Ngữ Text-to-Speech 🌍</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+        .container {
+            max-width: 1000px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #343a40;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status-card {
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f0f2f5;
+        }
+        .controls {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .slider-value {
+            display: inline-block;
+            width: 40px;
+            text-align: center;
+        }
+        .spectrogram {
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .spectrogram img {
+            max-width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        .hidden {
+            display: none;
+        }
+        .language-indicator {
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .vi {
+            background-color: #ff9999;
+            color: #800000;
+        }
+        .en {
+            background-color: #99ccff;
+            color: #003366;
+        }
+        .segments-container {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .segment {
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+        }
+        .segment.vi {
+            background-color: rgba(255, 153, 153, 0.3);
+        }
+        .segment.en {
+            background-color: rgba(153, 204, 255, 0.3);
+        }
+        .status-bar {
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status-info {
+            background-color: #b8daff;
+            color: #004085;
+        }
+        .status-success {
+            background-color: #c3e6cb;
+            color: #155724;
+        }
+        .status-warning {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+        .status-error {
+            background-color: #f5c6cb;
+            color: #721c24;
+        }
+        .audio-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        audio {
+            width: 100%;
+            border-radius: 30px;
+        }
+        .btn-circle {
+            width: 40px;
+            height: 40px;
+            padding: 6px 0;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.42857;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Đa Ngôn Ngữ Text-to-Speech 🌍</h1>
+            <p class="text-muted">Tạo giọng nói từ văn bản tiếng Việt và tiếng Anh</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="status-card">
+                    <h5>Trạng thái model:</h5>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <span id="vi-model-status" class="badge {{ 'bg-success' if vi_model_loaded else 'bg-danger' }}">
+                                Model Tiếng Việt {{ 'Đã tải ✓' if vi_model_loaded else 'Chưa tải ✗' }}
+                            </span>
+                        </div>
+                        <div>
+                            <button id="load-vi-model" class="btn btn-sm {{ 'btn-outline-success disabled' if vi_model_loaded else 'btn-outline-danger' }}">
+                                {{ 'Đã tải ✓' if vi_model_loaded else 'Tải model 📥' }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <div>
+                            <span id="en-model-status" class="badge {{ 'bg-success' if en_model_loaded else 'bg-danger' }}">
+                                Model Tiếng Anh {{ 'Đã tải ✓' if en_model_loaded else 'Chưa tải ✗' }}
+                            </span>
+                        </div>
+                        <div>
+                            <button id="load-en-model" class="btn btn-sm {{ 'btn-outline-success disabled' if en_model_loaded else 'btn-outline-danger' }}">
+                                {{ 'Đã tải ✓' if en_model_loaded else 'Tải model 📥' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="text-input" class="form-label">Nhập văn bản:</label>
+                    <textarea id="text-input" class="form-control" rows="5" placeholder="Nhập văn bản vào đây..."></textarea>
+                </div>
+
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="multi-language-mode">
+                    <label class="form-check-label" for="multi-language-mode">
+                        Chế độ đa ngôn ngữ (xử lý từng phần văn bản theo ngôn ngữ riêng) 🔄
+                    </label>
+                </div>
+
+                <div class="language-info mt-3">
+                    <span id="language-label">Ngôn ngữ phát hiện: Chưa có văn bản</span>
+                    <div class="language-indicator hidden" id="language-indicator"></div>
+                </div>
+
+                <div id="segments-container" class="segments-container hidden">
+                    <h6>Phân đoạn văn bản theo ngôn ngữ:</h6>
+                    <div id="segments-list"></div>
+                </div>
+
+                <div class="controls">
+                    <div class="slider-container">
+                        <label for="pitch-slider">Độ cao: <span id="pitch-value" class="slider-value">1.0</span></label>
+                        <input type="range" class="form-range" id="pitch-slider" min="0.5" max="1.5" step="0.1" value="1.0">
+                    </div>
+                    <div class="slider-container">
+                        <label for="energy-slider">Âm lượng: <span id="energy-value" class="slider-value">1.0</span></label>
+                        <input type="range" class="form-range" id="energy-slider" min="0.5" max="1.5" step="0.1" value="1.0">
+                    </div>
+                    <div class="slider-container">
+                        <label for="duration-slider">Tốc độ: <span id="duration-value" class="slider-value">1.0</span></label>
+                        <input type="range" class="form-range" id="duration-slider" min="0.5" max="1.5" step="0.1" value="1.0">
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button id="generate-button" class="btn btn-primary">
+                        <i class="fas fa-microphone"></i> Tạo Audio 🔊
+                    </button>
+                </div>
+
+                <div id="status-bar" class="status-bar status-info">
+                    Trạng thái: Vui lòng tải models...
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div id="audio-container" class="audio-container hidden">
+                    <h5>Audio:</h5>
+                    <audio id="audio-player" controls>
+                        Browser của bạn không hỗ trợ thẻ audio.
+                    </audio>
+                    <div class="mt-2">
+                        <button id="download-audio" class="btn btn-success">
+                            <i class="fas fa-download"></i> Tải xuống
+                        </button>
+                    </div>
+                </div>
+
+                <div id="spectrogram-container" class="spectrogram hidden">
+                    <h5>Spectrogram:</h5>
+                    <img id="spectrogram-image" src="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Các biến trạng thái
+            let currentLanguage = "vi";
+            let isMultiLanguageMode = false;
+            let lastAudioUrl = null;
+            
+            // Cập nhật giá trị slider
+            $("#pitch-slider").on("input", function() {
+                $("#pitch-value").text($(this).val());
+            });
+            
+            $("#energy-slider").on("input", function() {
+                $("#energy-value").text($(this).val());
+            });
+            
+            $("#duration-slider").on("input", function() {
+                $("#duration-value").text($(this).val());
+            });
+            
+            // Xử lý thay đổi văn bản
+            $("#text-input").on("input", function() {
+                const text = $(this).val().trim();
+                
+                if (text) {
+                    if (isMultiLanguageMode) {
+                        // Chế độ đa ngôn ngữ - phân tách văn bản
+                        $.ajax({
+                            url: "/api/split-text",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({ text: text }),
+                            success: function(response) {
+                                if (response.success && response.segments.length > 0) {
+                                    // Hiển thị các phân đoạn
+                                    $("#segments-container").removeClass("hidden");
+                                    $("#segments-list").empty();
+                                    
+                                    let segmentsHtml = "";
+                                    response.segments.forEach(function(segment) {
+                                        segmentsHtml += `<div class="segment ${segment.language}">
+                                            <strong class="text-${segment.language === 'vi' ? 'danger' : 'primary'}">
+                                                ${segment.language_name}:
+                                            </strong>
+                                            ${segment.text}
+                                        </div>`;
+                                    });
+                                    
+                                    $("#segments-list").html(segmentsHtml);
+                                    $("#language-label").text(`Phân đoạn ngôn ngữ: ${response.segments.length} đoạn văn bản`);
+                                    updateStatus(`Đã phân tích thành ${response.segments.length} đoạn văn bản khác nhau`, "info");
+                                } else {
+                                    $("#segments-container").addClass("hidden");
+                                    $("#language-label").text("Ngôn ngữ phát hiện: Chưa thể phân đoạn");
+                                    updateStatus("Không thể phân tách văn bản thành các đoạn ngôn ngữ", "warning");
+                                }
+                            },
+                            error: function(xhr) {
+                                $("#segments-container").addClass("hidden");
+                                updateStatus("Lỗi phân tích văn bản", "error");
+                            }
+                        });
+                    } else {
+                        // Chế độ đơn ngôn ngữ - phát hiện ngôn ngữ
+                        $.ajax({
+                            url: "/api/detect-language",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({ text: text }),
+                            success: function(response) {
+                                if (response.success) {
+                                    currentLanguage = response.language;
+                                    $("#language-label").text(`Ngôn ngữ phát hiện: ${response.language_name}`);
+                                    $("#language-indicator").removeClass("hidden vi en").addClass(currentLanguage);
+                                    $("#language-indicator").text(response.language_name);
+                                    $("#segments-container").addClass("hidden");
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    $("#language-label").text("Ngôn ngữ phát hiện: Chưa có văn bản");
+                    $("#language-indicator").addClass("hidden");
+                    $("#segments-container").addClass("hidden");
+                }
+            });
+            
+            // Xử lý chế độ đa ngôn ngữ
+            $("#multi-language-mode").change(function() {
+                isMultiLanguageMode = $(this).is(":checked");
+                
+                if (isMultiLanguageMode) {
+                    updateStatus("Đã bật chế độ đa ngôn ngữ ✅", "success");
+                    // Kích hoạt sự kiện input để phân tích lại văn bản
+                    $("#text-input").trigger("input");
+                } else {
+                    updateStatus("Đã tắt chế độ đa ngôn ngữ", "info");
+                    $("#segments-container").addClass("hidden");
+                    // Kích hoạt sự kiện input để phát hiện lại ngôn ngữ
+                    $("#text-input").trigger("input");
+                }
+            });
+            
+            // Tải model tiếng Việt
+            $("#load-vi-model").click(function() {
+                if ($(this).hasClass("disabled")) return;
+                
+                updateStatus("Đang tải model tiếng Việt... 🔄", "info");
+                $(this).prop("disabled", true);
+                
+                $.ajax({
+                    url: "/api/load-model",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ language: "vi" }),
+                    success: function(response) {
+                        if (response.success) {
+                            $("#vi-model-status").removeClass("bg-danger").addClass("bg-success").text("Model Tiếng Việt Đã tải ✓");
+                            $("#load-vi-model").removeClass("btn-outline-danger").addClass("btn-outline-success disabled").text("Đã tải ✓");
+                            updateStatus(response.message, "success");
+                        } else {
+                            updateStatus("Lỗi tải model tiếng Việt", "error");
+                        }
+                    },
+                    error: function(xhr) {
+                        updateStatus("Lỗi tải model tiếng Việt: " + (xhr.responseJSON ? xhr.responseJSON.error : "Lỗi không xác định"), "error");
+                    },
+                    complete: function() {
+                        $("#load-vi-model").prop("disabled", false);
+                    }
+                });
+            });
+            
+            // Tải model tiếng Anh
+            $("#load-en-model").click(function() {
+                if ($(this).hasClass("disabled")) return;
+                
+                updateStatus("Đang tải model tiếng Anh... 🔄", "info");
+                $(this).prop("disabled", true);
+                
+                $.ajax({
+                    url: "/api/load-model",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ language: "en" }),
+                    success: function(response) {
+                        if (response.success) {
+                            $("#en-model-status").removeClass("bg-danger").addClass("bg-success").text("Model Tiếng Anh Đã tải ✓");
+                            $("#load-en-model").removeClass("btn-outline-danger").addClass("btn-outline-success disabled").text("Đã tải ✓");
+                            updateStatus(response.message, "success");
+                        } else {
+                            updateStatus("Lỗi tải model tiếng Anh", "error");
+                        }
+                    },
+                    error: function(xhr) {
+                        updateStatus("Lỗi tải model tiếng Anh: " + (xhr.responseJSON ? xhr.responseJSON.error : "Lỗi không xác định"), "error");
+                    },
+                    complete: function() {
+                        $("#load-en-model").prop("disabled", false);
+                    }
+                });
+            });
+            
+            // Tạo audio
+            $("#generate-button").click(function() {
+                const text = $("#text-input").val().trim();
+                
+                if (!text) {
+                    updateStatus("Vui lòng nhập văn bản!", "warning");
+                    return;
+                }
+                
+                // Lấy giá trị từ các slider
+                const pitch_control = parseFloat($("#pitch-slider").val());
+                const energy_control = parseFloat($("#energy-slider").val());
+                const duration_control = parseFloat($("#duration-slider").val());
+                
+                updateStatus("Đang tạo audio... 🔄", "info");
+                $(this).prop("disabled", true);
+                
+                $.ajax({
+                    url: "/api/generate-speech",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        text: text,
+                        multi_language_mode: isMultiLanguageMode,
+                        pitch_control: pitch_control,
+                        energy_control: energy_control,
+                        duration_control: duration_control
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            // Hiển thị audio
+                            $("#audio-container").removeClass("hidden");
+                            $("#audio-player").attr("src", response.audio_url);
+                            lastAudioUrl = response.audio_url;
+                            
+                            // Hiển thị spectrogram nếu có
+                            if (response.spectrogram_url) {
+                                $("#spectrogram-container").removeClass("hidden");
+                                $("#spectrogram-image").attr("src", response.spectrogram_url);
+                            } else {
+                                $("#spectrogram-container").addClass("hidden");
+                            }
+                            
+                            // Hiển thị thông báo thành công
+                            if (response.multi_language_mode) {
+                                updateStatus("Đã tạo audio đa ngôn ngữ thành công! ✅", "success");
+                            } else {
+                                updateStatus(`Đã tạo audio ${response.language.toUpperCase()} thành công! ✅`, "success");
+                            }
+                            
+                            // Tự động phát audio
+                            document.getElementById("audio-player").play();
+                        } else {
+                            updateStatus("Lỗi tạo audio", "error");
+                        }
+                    },
+                    error: function(xhr) {
+                        updateStatus("Lỗi tạo audio: " + (xhr.responseJSON ? xhr.responseJSON.error : "Lỗi không xác định"), "error");
+                    },
+                    complete: function() {
+                        $("#generate-button").prop("disabled", false);
+                    }
+                });
+            });
+            
+            // Tải xuống audio
+            $("#download-audio").click(function() {
+                if (lastAudioUrl) {
+                    // Tạo link tải xuống
+                    const link = document.createElement('a');
+                    link.href = lastAudioUrl;
+                    link.download = 'speech.wav';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            });
+            
+            // Hàm cập nhật trạng thái
+            function updateStatus(message, type) {
+                const statusBar = $("#status-bar");
+                statusBar.removeClass("status-info status-success status-warning status-error");
+                statusBar.text("Trạng thái: " + message);
+                
+                switch (type) {
+                    case "success":
+                        statusBar.addClass("status-success");
+                        break;
+                    case "warning":
+                        statusBar.addClass("status-warning");
+                        break;
+                    case "error":
+                        statusBar.addClass("status-error");
+                        break;
+                    default:
+                        statusBar.addClass("status-info");
+                }
+            }
+            
+            // Khởi tạo
+            updateStatus("Vui lòng tải models hoặc nhập văn bản để bắt đầu", "info");
+        });
+    </script>
+</body>
+</html> 
